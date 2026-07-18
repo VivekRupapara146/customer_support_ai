@@ -8,8 +8,14 @@
  * deliberate choice for a security-conscious capstone, not an oversight.
  */
 
-const API_BASE_URL = (typeof window !== "undefined" && window.TECHMART_CONFIG && window.TECHMART_CONFIG.apiBaseUrl)
-  || "http://127.0.0.1:8000";
+function stripTrailingSlashes(url) {
+  return url.replace(/\/+$/, "");
+}
+
+const API_BASE_URL = stripTrailingSlashes(
+  (typeof window !== "undefined" && window.TECHMART_CONFIG && window.TECHMART_CONFIG.apiBaseUrl)
+    || "http://127.0.0.1:8000"
+);
 const FALLBACK_PHRASE = "don't have enough information";
 const ALL_DOMAINS = ["billing", "technical", "product", "complaint", "faq"];
 
@@ -31,7 +37,7 @@ function sanitizeAgentList(routedAgents) {
 
 // Export for Node-based unit tests; no-op in the browser.
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, ALL_DOMAINS };
+  module.exports = { isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, stripTrailingSlashes, ALL_DOMAINS };
 }
 
 // ---- Browser-only application logic ---------------------------------------

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, ALL_DOMAINS } = require("./app.js");
+const { isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, stripTrailingSlashes, ALL_DOMAINS } = require("./app.js");
 
 function test(name, fn) {
   try {
@@ -50,6 +50,26 @@ test("sanitizeAgentList handles non-array input safely", () => {
 
 test("ALL_DOMAINS matches the backend's 5 support categories", () => {
   assert.deepStrictEqual(ALL_DOMAINS.sort(), ["billing", "complaint", "faq", "product", "technical"].sort());
+});
+
+// --- Regression tests for the real double-slash bug found in production ---
+// (config.js had a trailing slash -> requests went to ".../onrender.com//auth/login",
+// which the backend rejected. This was misdiagnosed as a CORS bug at first because
+// the failure appeared on the CORS preflight OPTIONS request.)
+
+test("stripTrailingSlashes removes a single trailing slash (the actual prod bug)", () => {
+  assert.strictEqual(
+    stripTrailingSlashes("https://techmart-support-backend-5h0x.onrender.com/"),
+    "https://techmart-support-backend-5h0x.onrender.com"
+  );
+});
+
+test("stripTrailingSlashes removes multiple trailing slashes", () => {
+  assert.strictEqual(stripTrailingSlashes("https://example.com///"), "https://example.com");
+});
+
+test("stripTrailingSlashes leaves a clean URL unchanged", () => {
+  assert.strictEqual(stripTrailingSlashes("https://example.com"), "https://example.com");
 });
 
 console.log("\nFrontend unit tests complete.");
