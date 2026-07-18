@@ -1,0 +1,3 @@
+Premium Subscription Troubleshooting
+
+If your Premium subscription is not unlocking after payment, first confirm the payment was successfully charged by checking your account billing history. Premium features typically activate within 15 minutes of a successful payment. If more than an hour has passed and Premium is still locked, try logging out and logging back in to refresh your account status. Persistent issues after these steps should be escalated to the technical support team along with your order confirmation number.

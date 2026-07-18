@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: techmart-support-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_NAME
+        value: TechMart Support AI
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_MINUTES
+        value: "60"
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB_NAME
+        value: techmart_support
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RATE_LIMIT_DEFAULT
+        value: 60/minute
+      - key: ACTIVE_ROUTER
+        value: rule_based
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DEMO_USERNAME
+        value: demo
+      - key: DEMO_PASSWORD_HASH
+        sync: false
+
+  - type: web
+    name: techmart-support-frontend
+    runtime: static
+    staticPublishPath: ./frontend
+    buildCommand: ""
+    # NOTE: this is a plain static site with no build step, so Render's
+    # envVars can't be injected into config.js automatically (that only
+    # works for services with an actual build process). After deploying
+    # the backend, manually copy its public URL into frontend/config.js's
+    # apiBaseUrl and redeploy the frontend. See DEPLOYMENT.md.

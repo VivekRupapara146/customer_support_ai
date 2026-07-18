@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TechMart Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-screen" class="screen">
+  <div class="login-card">
+    <div class="eyebrow">TECHMART SUPPORT</div>
+    <h1>Sign in</h1>
+    <p class="muted">This is a Milestone 1 auth stub — any username and password will work.</p>
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input type="text" id="username" required autocomplete="username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" required autocomplete="current-password" />
+      <button type="submit">Sign in</button>
+      <p id="login-error" class="error-text" role="alert" hidden></p>
+    </form>
+  </div>
+</div>
+
+<div id="app-screen" class="screen" hidden>
+  <aside class="sidebar">
+    <div class="eyebrow">TECHMART SUPPORT</div>
+    <div class="session-row">
+      <span class="muted">session</span>
+      <code id="session-id">—</code>
+    </div>
+    <button id="new-chat-btn" class="ghost-btn">+ New conversation</button>
+
+    <div class="status-panel">
+      <div class="status-title">Specialists</div>
+      <ul id="status-list" class="status-list">
+        <li class="status-item" data-domain="billing"><span class="dot dot-billing"></span>Billing</li>
+        <li class="status-item" data-domain="technical"><span class="dot dot-technical"></span>Technical</li>
+        <li class="status-item" data-domain="product"><span class="dot dot-product"></span>Product</li>
+        <li class="status-item" data-domain="complaint"><span class="dot dot-complaint"></span>Complaint</li>
+        <li class="status-item" data-domain="faq"><span class="dot dot-faq"></span>FAQ</li>
+      </ul>
+      <p class="status-hint">Lights up to show which specialist(s) answered your last message.</p>
+    </div>
+
+    <button id="logout-btn" class="ghost-btn logout">Sign out</button>
+  </aside>
+
+  <main class="chat-main">
+    <div id="messages" class="messages" role="log" aria-live="polite"></div>
+
+    <form id="chat-form" class="chat-input-row">
+      <textarea
+        id="chat-input"
+        placeholder="Ask about an order, a device, or an account issue…"
+        rows="1"
+        maxlength="2000"
+        required
+      ></textarea>
+      <button type="submit" id="send-btn">Send</button>
+    </form>
+  </main>
+</div>
+
+<template id="msg-user-template">
+  <div class="msg msg-user">
+    <div class="bubble"></div>
+  </div>
+</template>
+
+<template id="msg-assistant-template">
+  <div class="msg msg-assistant">
+    <div class="tag-row"></div>
+    <div class="bubble"></div>
+  </div>
+</template>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
