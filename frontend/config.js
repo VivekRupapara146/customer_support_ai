@@ -3,5 +3,5 @@
 // Kept as a separate file (not baked into app.js) so this is the ONLY
 // file that needs editing per-deployment.
 window.TECHMART_CONFIG = {
-  apiBaseUrl: "http://127.0.0.1:8000",
+  apiBaseUrl: "https://techmart-support-backend-5h0x.onrender.com",
 };
