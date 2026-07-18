@@ -35,9 +35,64 @@ function sanitizeAgentList(routedAgents) {
   return routedAgents.filter((a) => ALL_DOMAINS.includes(a));
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function applyBold(text) {
+  return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+/**
+ * Minimal, deliberately narrow markdown renderer: bold (**text**) and
+ * simple bullet lists (lines starting with "* " or "- "). Not a general
+ * markdown parser — just enough for what our agents' prompts actually
+ * produce. HTML-escapes first so this can never be an XSS vector, even
+ * if a malicious query or a poisoned RAG chunk contains raw HTML/script
+ * tags — those render as inert text, not markup.
+ */
+function renderLimitedMarkdown(rawText) {
+  const escaped = escapeHtml(rawText);
+  const lines = escaped.split("\n");
+  const htmlParts = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const bulletMatch = line.match(/^[*-]\s+(.*)/);
+    if (bulletMatch) {
+      if (!inList) {
+        htmlParts.push("<ul>");
+        inList = true;
+      }
+      htmlParts.push(`<li>${applyBold(bulletMatch[1])}</li>`);
+    } else {
+      if (inList) {
+        htmlParts.push("</ul>");
+        inList = false;
+      }
+      if (line.trim() === "") {
+        htmlParts.push("<br>");
+      } else {
+        htmlParts.push(`<p>${applyBold(line)}</p>`);
+      }
+    }
+  }
+  if (inList) htmlParts.push("</ul>");
+
+  return htmlParts.join("");
+}
+
 // Export for Node-based unit tests; no-op in the browser.
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, stripTrailingSlashes, ALL_DOMAINS };
+  module.exports = {
+    isFallbackReply, isValidSessionIdFormat, sanitizeAgentList, stripTrailingSlashes,
+    escapeHtml, renderLimitedMarkdown, ALL_DOMAINS,
+  };
 }
 
 // ---- Browser-only application logic ---------------------------------------
@@ -81,13 +136,17 @@ if (typeof window !== "undefined") {
 
     function showApp() {
       loginScreen.hidden = true;
+      loginScreen.inert = true;
       appScreen.hidden = false;
+      appScreen.inert = false;
       chatInput.focus();
     }
 
     function showLogin() {
       appScreen.hidden = true;
+      appScreen.inert = true;
       loginScreen.hidden = false;
+      loginScreen.inert = false;
       authToken = null;
       currentSessionId = null;
     }
@@ -134,7 +193,7 @@ if (typeof window !== "undefined") {
         tagRow.appendChild(tag);
       });
 
-      node.querySelector(".bubble").textContent = replyText;
+      node.querySelector(".bubble").innerHTML = renderLimitedMarkdown(replyText);
       messagesEl.appendChild(node);
       scrollToBottom();
     }
