@@ -1,0 +1,44 @@
+# --- Secrets / environment ---
+.env
+*.env
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Test / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+tmp_test_store/
+
+# --- ML artifacts / large data ---
+# Keep the trained model + mapping small enough to version, but never
+# re-download the raw Banking77 CSVs into version control by accident.
+banking77_train.csv
+banking77_test.csv
+
+# --- Logs ---
+*.log
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# --- Node (frontend tests use plain Node, no real build, but just in case) ---
+node_modules/
