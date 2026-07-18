@@ -43,7 +43,7 @@ def test_all_five_agents_exist_and_respond():
 
 def test_product_agent_grounds_on_warranty_doc():
     registry = build_test_registry()
-    response = registry["product"].respond("warranty specification sheets compatibility information")
+    response = registry["product"].respond("warranty claim serial number proof of purchase extended warranty")
     assert response.grounded is True
     print("test_product_agent_grounds_on_warranty_doc: PASS")
 
@@ -53,6 +53,20 @@ def test_complaint_agent_grounds_on_escalation_doc():
     response = registry["complaint"].respond("complaint escalation account manager")
     assert response.grounded is True
     print("test_complaint_agent_grounds_on_escalation_doc: PASS")
+
+
+def test_technical_agent_grounds_on_technical_troubleshooting_doc():
+    registry = build_test_registry()
+    response = registry["technical"].respond("bluetooth pairing device firmware update")
+    assert response.grounded is True
+    print("test_technical_agent_grounds_on_technical_troubleshooting_doc: PASS")
+
+
+def test_faq_agent_grounds_on_general_faq_doc():
+    registry = build_test_registry()
+    response = registry["faq"].respond("store hours shipping tracking order account")
+    assert response.grounded is True
+    print("test_faq_agent_grounds_on_general_faq_doc: PASS")
 
 
 def test_multi_agent_chat_end_to_end():
@@ -95,5 +109,7 @@ if __name__ == "__main__":
     test_all_five_agents_exist_and_respond()
     test_product_agent_grounds_on_warranty_doc()
     test_complaint_agent_grounds_on_escalation_doc()
+    test_technical_agent_grounds_on_technical_troubleshooting_doc()
+    test_faq_agent_grounds_on_general_faq_doc()
     test_multi_agent_chat_end_to_end()
     print("\nAll Milestone 4 tests passed.")
