@@ -114,6 +114,7 @@ if (typeof window !== "undefined") {
     const chatInput = document.getElementById("chat-input");
     const sendBtn = document.getElementById("send-btn");
     const statusItems = document.querySelectorAll(".status-item");
+    const historyListEl = document.getElementById("history-list");
 
     async function apiFetch(path, options = {}) {
       const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -140,6 +141,7 @@ if (typeof window !== "undefined") {
       appScreen.hidden = false;
       appScreen.inert = false;
       chatInput.focus();
+      loadSessionList();
     }
 
     function showLogin() {
@@ -161,6 +163,74 @@ if (typeof window !== "undefined") {
     function updateStatusLights(activeDomains) {
       statusItems.forEach((item) => {
         item.classList.toggle("active", activeDomains.includes(item.dataset.domain));
+      });
+    }
+
+    async function loadSessionList() {
+      try {
+        const result = await apiFetch("/chat/sessions");
+        renderSessionList(result.data.sessions);
+      } catch (err) {
+        // Non-critical — the chat still works without the history list,
+        // so fail quietly here rather than blocking the whole screen.
+        console.error("Failed to load conversation history:", err.message);
+      }
+    }
+
+    function renderSessionList(sessions) {
+      historyListEl.innerHTML = "";
+
+      if (!sessions || sessions.length === 0) {
+        const li = document.createElement("li");
+        li.className = "history-empty muted";
+        li.textContent = "No conversations yet";
+        historyListEl.appendChild(li);
+        return;
+      }
+
+      sessions.forEach((session) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "history-item";
+        btn.textContent = session.preview || session.session_id.slice(0, 8);
+        btn.dataset.sessionId = session.session_id;
+        if (session.session_id === currentSessionId) {
+          btn.classList.add("active");
+        }
+        btn.addEventListener("click", () => openSession(session.session_id));
+        li.appendChild(btn);
+        historyListEl.appendChild(li);
+      });
+    }
+
+    async function openSession(sessionId) {
+      try {
+        const result = await apiFetch(`/chat/history/${encodeURIComponent(sessionId)}`);
+        currentSessionId = sessionId;
+        sessionIdEl.textContent = sessionId.slice(0, 8);
+        messagesEl.innerHTML = "";
+
+        const lastAgents = [];
+        result.data.messages.forEach((msg) => {
+          if (msg.role === "user") {
+            renderUserMessage(msg.content);
+          } else {
+            renderAssistantMessage(msg.content, msg.routed_agents || []);
+            lastAgents.length = 0;
+            lastAgents.push(...(msg.routed_agents || []));
+          }
+        });
+        updateStatusLights(sanitizeAgentList(lastAgents));
+        highlightActiveHistoryItem(sessionId);
+      } catch (err) {
+        renderErrorMessage(`Couldn't load that conversation: ${err.message}`);
+      }
+    }
+
+    function highlightActiveHistoryItem(sessionId) {
+      historyListEl.querySelectorAll(".history-item").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.sessionId === sessionId);
       });
     }
 
@@ -231,6 +301,7 @@ if (typeof window !== "undefined") {
 
     newChatBtn.addEventListener("click", () => {
       resetConversationUI();
+      highlightActiveHistoryItem(null);
       chatInput.focus();
     });
 
@@ -261,6 +332,7 @@ if (typeof window !== "undefined") {
 
         renderAssistantMessage(reply, routed_agents);
         updateStatusLights(sanitizeAgentList(routed_agents));
+        loadSessionList();
       } catch (err) {
         renderErrorMessage(err.message);
       } finally {

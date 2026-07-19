@@ -43,6 +43,15 @@ Each half has its own README with setup/run/test instructions:
   rate limiting, CORS, security headers, prompt-injection mitigation, and
   a startup guard that refuses to boot in production with placeholder
   secrets.
+- **Domain-filtered retrieval**: each agent only searches its own mapped
+  knowledge base documents (e.g., billing can never retrieve product
+  content), with one deliberate overlap (Premium subscription content is
+  shared between billing and technical, since it genuinely spans both).
+- **Conversation history**: past conversations are listed and reloadable
+  from the sidebar, backed by MongoDB with per-user ownership isolation.
+- **CI**: every push runs the full test suite (backend + frontend)
+  automatically via GitHub Actions — fully offline, no live credentials
+  needed in CI.
 
 ## Deployment
 
@@ -52,5 +61,6 @@ design.
 
 ## Tests
 
-53 backend tests + 9 frontend tests across all milestones — see each
-component's README for how to run them.
+~85 backend tests + 18 frontend tests across all milestones — see each
+component's README for how to run them. CI runs all of them automatically
+on every push via `.github/workflows/tests.yml`.

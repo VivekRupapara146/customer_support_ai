@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Set up test environment
+        run: cp .env.example .env
+
+      # All backend tests run fully offline: fake embeddings/LLM providers,
+      # mongomock-motor for the DB, and the already-trained Router v2b
+      # artifact — no live Gemini/Mongo credentials needed in CI.
+      - name: RAG pipeline tests
+        run: python tests/test_rag_pipeline.py
+
+      - name: Milestone 3 tests (agent + rule-based router)
+        run: python tests/test_milestone3.py
+
+      - name: Milestone 4 tests (all 5 agents + aggregation)
+        run: python tests/test_milestone4.py
+
+      - name: Milestone 5 tests (conversation memory)
+        run: python tests/test_milestone5.py
+
+      - name: Milestone 6 tests (LLM-based router v2)
+        run: python tests/test_milestone6.py
+
+      - name: Milestone 7 tests (trained classifier router v2b)
+        run: python tests/test_milestone7.py
+
+      - name: Milestone 9 tests (security hardening)
+        run: python tests/test_milestone9.py
+
+      - name: Milestone 10 auth tests (demo credential)
+        run: python tests/test_milestone10_auth.py
+
+      - name: Threshold calibration regression test
+        run: python tests/test_threshold_calibration.py
+
+      - name: Eval harness metrics tests
+        run: python tests/test_eval_harness.py
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run frontend unit tests
+        run: node app.test.js

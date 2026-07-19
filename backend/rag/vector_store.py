@@ -38,19 +38,31 @@ class VectorStore:
         self._index.add(arr)
         self._metadata.extend(metadata)
 
-    def search(self, query_vector: list[float], top_k: int = 4) -> list[dict]:
+    def search(self, query_vector: list[float], top_k: int = 4, allowed_sources: set[str] | None = None) -> list[dict]:
         if self._index.ntotal == 0:
             return []
 
         arr = np.array([query_vector], dtype="float32")
         faiss.normalize_L2(arr)
-        scores, indices = self._index.search(arr, min(top_k, self._index.ntotal))
+
+        # When filtering by source, over-fetch from FAISS (search the
+        # whole index) then filter down in Python, rather than maintaining
+        # separate per-domain indices — the corpus is small enough that
+        # this is simpler and cheap (Instruction 5), while still giving
+        # correct top_k results within the allowed sources.
+        search_k = self._index.ntotal if allowed_sources is not None else min(top_k, self._index.ntotal)
+        scores, indices = self._index.search(arr, search_k)
 
         results = []
         for score, idx in zip(scores[0], indices[0]):
             if idx == -1:
                 continue
-            results.append({**self._metadata[idx], "score": float(score)})
+            metadata = self._metadata[idx]
+            if allowed_sources is not None and metadata["source"] not in allowed_sources:
+                continue
+            results.append({**metadata, "score": float(score)})
+            if len(results) >= top_k:
+                break
         return results
 
     def save(self, directory: str) -> None:

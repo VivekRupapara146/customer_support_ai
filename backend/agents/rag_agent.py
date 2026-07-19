@@ -13,6 +13,7 @@ from llm.provider import LLMProvider
 from rag.embeddings import EmbeddingProvider
 from rag.vector_store import VectorStore
 from rag.retrieval import retrieve, CONFIDENCE_THRESHOLD
+from rag.domain_sources import get_allowed_sources
 from prompts.support_prompts import INSUFFICIENT_CONTEXT_FALLBACK, build_rag_prompt
 
 
@@ -32,10 +33,16 @@ class RAGAgent(BaseAgent):
         self._embedding_provider = embedding_provider
         self._store = store
         self._confidence_threshold = confidence_threshold
+        # None means "no domain mapping, search everything" — a graceful
+        # fallback, not a silent failure, if a new domain is ever added
+        # without updating rag/domain_sources.py.
+        self._allowed_sources = get_allowed_sources(name)
 
     def respond(self, query: str) -> AgentResponse:
         result = retrieve(
-            query, self._embedding_provider, self._store, confidence_threshold=self._confidence_threshold
+            query, self._embedding_provider, self._store,
+            confidence_threshold=self._confidence_threshold,
+            allowed_sources=self._allowed_sources,
         )
 
         if result.insufficient_context:

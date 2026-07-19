@@ -12,6 +12,17 @@ class Message(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class SessionSummary(BaseModel):
+    session_id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    preview: str = ""
+
+
+class SessionListData(BaseModel):
+    sessions: list[SessionSummary]
+
+
 class ConversationHistoryData(BaseModel):
     session_id: str
     messages: list[Message]

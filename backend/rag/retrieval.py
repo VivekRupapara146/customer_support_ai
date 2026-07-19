@@ -17,7 +17,15 @@ from core.logging import get_logger
 
 logger = get_logger(__name__)
 
-CONFIDENCE_THRESHOLD = 0.55  # cosine similarity; revisit once real TechMart docs give us calibration data
+CONFIDENCE_THRESHOLD = 0.51
+# Calibrated (Milestone 10 follow-up) against REAL Gemini embeddings using
+# scripts/calibrate_threshold.py, not guessed. Data: 8 on-topic queries
+# scored 0.5325-0.7564; 5 off-topic queries scored 0.4374-0.4913. This
+# value sits in that gap. The previous placeholder (0.55) was too high —
+# it would have wrongly rejected at least one genuinely answerable query
+# ("how do I reset my password", scored 0.5325) as insufficient context.
+# Small sample (8/5 queries against a 6-doc KB) — re-run the calibration
+# script if the knowledge base grows substantially.
 
 
 @dataclass
@@ -34,9 +42,10 @@ def retrieve(
     store: VectorStore,
     top_k: int = 4,
     confidence_threshold: float = CONFIDENCE_THRESHOLD,
+    allowed_sources: set[str] | None = None,
 ) -> RetrievalResult:
     query_vector = embedding_provider.embed([query])[0]
-    chunks = store.search(query_vector, top_k=top_k)
+    chunks = store.search(query_vector, top_k=top_k, allowed_sources=allowed_sources)
 
     top_score = chunks[0]["score"] if chunks else 0.0
     insufficient = top_score < confidence_threshold

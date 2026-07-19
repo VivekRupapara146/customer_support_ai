@@ -15,9 +15,9 @@ from core.rate_limit import limiter
 from core.config import settings
 from core.logging import get_logger
 from database.mongo import get_db
-from database.conversations import append_message, get_history
+from database.conversations import append_message, get_history, list_sessions
 from models.response import APIResponse
-from models.conversation import Message, ConversationHistoryData
+from models.conversation import Message, ConversationHistoryData, SessionListData
 from router.rule_based import route as route_rule_based, AGENT_KEYWORDS
 from router.llm_based import route as route_llm_based
 from router.trained_classifier import route as route_trained_classifier
@@ -140,3 +140,11 @@ async def chat_history(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
     return APIResponse(success=True, data=ConversationHistoryData(session_id=session_id, messages=messages))
+
+
+@router_.get("/sessions", response_model=APIResponse[SessionListData])
+async def chat_sessions(subject: str = Depends(get_current_subject)):
+    """Lists the current user's past conversations, most recently active first."""
+    db = get_db()
+    sessions = await list_sessions(db, subject)
+    return APIResponse(success=True, data=SessionListData(sessions=sessions))

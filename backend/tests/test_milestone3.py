@@ -43,7 +43,7 @@ def test_faq_agent_grounded_response():
     store = ingest_directory("knowledge_base", embedding_provider, embedding_dim=DIMENSION)
     agent = RAGAgent(name="faq", system_prompt=AGENT_SYSTEM_PROMPTS["faq"], llm=FakeLLMProvider(), embedding_provider=embedding_provider, store=store, confidence_threshold=0.3)
 
-    response = agent.respond("refund payment original method")
+    response = agent.respond("store hours shipping tracking order account")
     assert response.grounded is True
     assert "FAKE_LLM_RESPONSE" in response.text
     print("test_faq_agent_grounded_response: PASS")
