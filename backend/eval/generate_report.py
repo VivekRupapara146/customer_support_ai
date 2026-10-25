@@ -21,6 +21,16 @@ DISPLAY_NAMES = {
 }
 
 
+# Qualitative on purpose: per-query token usage is not recorded yet, so a
+# dollar figure here would be invented. Replace with measured cost once
+# token tracking lands.
+ROUTER_COST = {
+    "v1_rule_based": "none (local)",
+    "v2_llm_based": "1 LLM call / query",
+    "v2b_trained_classifier": "none (local)",
+}
+
+
 def load_available_results() -> dict:
     loaded = {}
     for key, path in RESULT_FILES.items():
@@ -39,13 +49,13 @@ def generate_markdown(results: dict) -> str:
 
     lines.append("## Overall Results")
     lines.append("")
-    lines.append("| Router | Exact Match | Hit Rate | Avg Precision | Avg Latency |")
-    lines.append("|---|---|---|---|---|")
+    lines.append("| Router | Exact Match | Hit Rate | Avg Precision | Avg Latency | Marginal Cost |")
+    lines.append("|---|---|---|---|---|---|")
     for key, data in results.items():
         o = data["overall"]
         lines.append(
             f"| {DISPLAY_NAMES[key]} | {o['exact_match_rate']:.1%} | {o['hit_rate']:.1%} | "
-            f"{o['avg_precision']:.1%} | {o['avg_latency_ms']:.2f} ms |"
+            f"{o['avg_precision']:.1%} | {o['avg_latency_ms']:.2f} ms | {ROUTER_COST[key]} |"
         )
     lines.append("")
 

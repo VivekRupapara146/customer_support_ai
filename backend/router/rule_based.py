@@ -43,7 +43,8 @@ def route(query: str) -> RouteDecision:
 
     logger.info(
         "route_decision_logged",
-        extra={"query": query, "agents": agents, "matched_keywords": matched},
+        # Length only, never the raw text: user queries may contain PII.
+        extra={"query_length": len(query), "agents": agents, "matched_keywords": matched},
     )
 
     return decision

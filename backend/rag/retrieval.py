@@ -53,7 +53,8 @@ def retrieve(
     logger.info(
         "retrieval_logged",
         extra={
-            "query": query,
+            # Length only, never the raw text: user queries may contain PII.
+            "query_length": len(query),
             "top_score": top_score,
             "insufficient_context": insufficient,
             "chunk_sources": [c["source"] for c in chunks],

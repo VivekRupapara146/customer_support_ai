@@ -63,6 +63,15 @@ jobs:
       - name: Eval harness metrics tests
         run: python tests/test_eval_harness.py
 
+      - name: Conversation history / session listing tests
+        run: python tests/test_conversation_history_ui.py
+
+      - name: Domain-filtered retrieval tests
+        run: python tests/test_domain_filtered_retrieval.py
+
+      - name: Structured logging tests
+        run: python tests/test_logging.py
+
   frontend-tests:
     runs-on: ubuntu-latest
     defaults:

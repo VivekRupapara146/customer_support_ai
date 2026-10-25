@@ -30,9 +30,11 @@ Each half has its own README with setup/run/test instructions:
 
 - **3 interchangeable routers** behind one interface: rule-based keyword
   matching, an LLM-based structured-output classifier, and a Banking77-
-  trained TF-IDF + Logistic Regression classifier (95.4% test accuracy) —
-  built specifically to support a three-way comparison in the capstone
-  report.
+  trained TF-IDF + Logistic Regression classifier — built specifically to
+  support a measured three-way comparison (table below). The Banking77
+  model scores 95.4% on Banking77's own test set but only a 30% hit rate on
+  TechMart queries: a measured domain-transfer gap, which is why it is not
+  the default router.
 - **RAG grounding with an honesty guarantee**: retrieval confidence below
   threshold triggers an explicit "I don't know" rather than letting the
   LLM improvise.
@@ -53,6 +55,23 @@ Each half has its own README with setup/run/test instructions:
   automatically via GitHub Actions — fully offline, no live credentials
   needed in CI.
 
+## Router comparison
+
+Evaluated on 30 hand-labeled TechMart queries (single-domain, multi-domain,
+messy phrasing, ambiguous). *Hit rate* = at least one predicted agent is
+correct; *exact match* = predicted set equals the expected set.
+
+| Router | Hit rate | Exact match | Avg latency | Marginal cost |
+|---|---|---|---|---|
+| v1 — Rule-based (default) | 73.3% | 40.0% | 0.01 ms | none (local) |
+| v2 — LLM-based (Gemini) | 86.7% | 50.0% | 478 ms | 1 LLM call / query |
+| v2b — TF-IDF + LR (Banking77) | 30.0% | 10.0% | 84 ms | none (local) |
+
+The LLM router is the most accurate; rule-based is the default because it is
+free and instant. 30 queries is a small set, so treat differences as
+directional. Full per-category breakdown and caveats:
+[`backend/eval/router_comparison_report.md`](backend/eval/router_comparison_report.md).
+
 ## Deployment
 
 See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the full Render setup, including
@@ -61,6 +80,6 @@ design.
 
 ## Tests
 
-~85 backend tests + 18 frontend tests across all milestones — see each
-component's README for how to run them. CI runs all of them automatically
-on every push via `.github/workflows/tests.yml`.
+86 backend checks (13 files) + 18 frontend checks — see each component's
+README for how to run them. CI runs all of them automatically on every push
+via `.github/workflows/tests.yml`.
