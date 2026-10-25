@@ -36,7 +36,14 @@ python tests/test_milestone6.py
 python tests/test_milestone7.py
 python tests/test_milestone9.py
 python tests/test_milestone10_auth.py
+python tests/test_threshold_calibration.py
+python tests/test_eval_harness.py
+python tests/test_conversation_history_ui.py
+python tests/test_domain_filtered_retrieval.py
+python tests/test_logging.py
 ```
+
+Same list CI runs (`.github/workflows/tests.yml`): 13 files, 86 checks.
 
 All test files are self-contained scripts (no pytest required) — each
 prints PASS/FAIL per case and exits non-zero on failure.
